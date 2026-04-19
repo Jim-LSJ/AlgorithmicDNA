@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer components {
+  .template-highlight {
+    @apply border-l-4 border-blue-500 bg-blue-50/50 px-2 py-0.5 rounded-sm;
+  }
+  
+  .variation-highlight {
+    @apply border-l-4 border-red-500 bg-red-50/50 px-2 py-0.5 rounded-sm;
+  }
+}
+
+/* Shiki overrides */
+pre {
+  background-color: transparent !important;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
