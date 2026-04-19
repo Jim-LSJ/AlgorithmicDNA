@@ -19,6 +19,18 @@ export const nextGreaterElement: AlgorithmPattern = {
             [[mod|res[idx] = nums[i]|Found the next greater element for idx.|找到 idx 的下一個更大元素。]]
         stack.append(i)
     return res`,
+  coreTemplateCpp: `vector<int> nextGreaterElement(vector<int>& nums) {
+    [[core|stack<int> s;|Stack to maintain elements.|用於維護元素的棧。]]
+    vector<int> res(nums.size(), -1);
+    for (int i = 0; i < nums.size(); ++i) {
+        [[mod|while (!s.empty() && nums[s.top()] < nums[i]) {|Current > stack top.|當前值 > 棧頂值。]]
+            res[s.top()] = nums[i];
+            s.pop();
+        }
+        s.push(i);
+    }
+    return res;
+}`,
   variations: [
     {
       id: "daily-temperatures",
@@ -29,6 +41,10 @@ export const nextGreaterElement: AlgorithmPattern = {
       coreLogic: `while stack and temperatures[i] > temperatures[stack[-1]]:
     idx = stack.pop()
     res[idx] = i - idx`,
+      coreLogicCpp: `while (!s.empty() && temperatures[i] > temperatures[s.top()]) {
+    int idx = s.top(); s.pop();
+    res[idx] = i - idx;
+}`,
       adaptationLogic: ``,
       explanation: "Exactly the same as Next Greater Element, but store the *difference in indices* instead of the value itself.",
       fullCode: `def daily_temperatures(temperatures):
@@ -40,7 +56,20 @@ export const nextGreaterElement: AlgorithmPattern = {
             prev_idx = stack.pop()
             res[prev_idx] = i - prev_idx
         stack.append(i)
-    return res`
+    return res`,
+      fullCodeCpp: `vector<int> dailyTemperatures(vector<int>& temperatures) {
+    int n = temperatures.size();
+    vector<int> res(n, 0);
+    stack<int> s;
+    for (int i = 0; i < n; i++) {
+        [[mod|while (!s.empty() && temperatures[i] > temperatures[s.top()]) {|Wait for warmer temperature.|等待更溫暖的溫度。]]
+            int prevIdx = s.top(); s.pop();
+            res[prevIdx] = i - prevIdx;
+        }
+        s.push(i);
+    }
+    return res;
+}`
     },
     {
       id: "next-greater-element-ii",
@@ -52,6 +81,10 @@ export const nextGreaterElement: AlgorithmPattern = {
     curr = nums[i % n]
     while stack and nums[stack[-1]] < curr:
         res[stack.pop()] = curr`,
+      coreLogicCpp: `for (int i = 0; i < n * 2; i++) {
+    while (!s.empty() && nums[s.top()] < nums[i % n])
+        res[s.top()] = nums[i % n], s.pop();
+}`,
       adaptationLogic: `range(n * 2)`,
       explanation: "Simulate a circular array by iterating through the array twice and using modulo for indexing.",
       fullCode: `def next_greater_circular(nums):
@@ -63,7 +96,20 @@ export const nextGreaterElement: AlgorithmPattern = {
         while stack and nums[stack[-1]] < curr:
             res[stack.pop()] = curr
         if i < n: stack.append(i)
-    return res`
+    return res`,
+      fullCodeCpp: `vector<int> nextGreaterElements(vector<int>& nums) {
+    int n = nums.size();
+    vector<int> res(n, -1);
+    stack<int> s;
+    [[core|for (int i = 0; i < n * 2; i++) {|Virtual duplication for cycle.|循環兩次模擬環迴。]]
+        while (!s.empty() && nums[s.top()] < nums[i % n]) {
+            res[s.top()] = nums[i % n];
+            s.pop();
+        }
+        if (i < n) s.push(i);
+    }
+    return res;
+}`
     },
     {
       id: "largest-rectangle-histogram",
@@ -75,6 +121,11 @@ export const nextGreaterElement: AlgorithmPattern = {
     h = heights[stack.pop()]
     w = i - stack[-1] - 1
     area = max(area, h * w)`,
+      coreLogicCpp: `while (s.top() != -1 && heights[i] < heights[s.top()]) {
+    int h = heights[s.top()]; s.pop();
+    int w = i - s.top() - 1;
+    res = max(res, h * w);
+}`,
       adaptationLogic: `add sentinel 0`,
       explanation: "Use a monotonic increasing stack to find the left and right boundaries where each height can be the minimum, forming a rectangle.",
       fullCode: `def largest_rectangle_area(heights):
@@ -87,7 +138,21 @@ export const nextGreaterElement: AlgorithmPattern = {
             w = i - stack[-1] - 1
             res = max(res, h * w)
         stack.append(i)
-    return res`
+    return res`,
+      fullCodeCpp: `int largestRectangleArea(vector<int>& heights) {
+    [[core|heights.push_back(0);|Add sentinel to force stack flush.|加入哨兵以強制排空棧。]]
+    stack<int> s; s.push(-1);
+    int res = 0;
+    for (int i = 0; i < heights.size(); i++) {
+        [[mod|while (s.top() != -1 && heights[i] < heights[s.top()])|Calculate area when height decreases.|當高度遞減時計算面積。]] {
+            int h = heights[s.top()]; s.pop();
+            int w = (i - s.top() - 1);
+            res = max(res, h * w);
+        }
+        s.push(i);
+    }
+    return res;
+}`
     }
   ]
 };

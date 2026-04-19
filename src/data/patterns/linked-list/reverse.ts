@@ -19,6 +19,16 @@ export const linkedListReverse: AlgorithmPattern = {
         [[mod|prev = curr|Move forward.|步進。]]
         [[mod|curr = nxt|Move forward.|步進。]]
     return prev`,
+  coreTemplateCpp: `ListNode* reverseList(ListNode* head) {
+    [[core|ListNode *prev = nullptr, *curr = head;|Initialize prev as null.|將 prev 初始為空。]]
+    while (curr) {
+        [[mod|ListNode* nxt = curr->next;|Store successor.|存儲後繼節點。]]
+        curr->next = prev;
+        prev = curr;
+        curr = nxt;
+    }
+    return prev;
+}`,
   variations: [
     {
       id: "reverse-between",
@@ -34,6 +44,14 @@ for _ in range(right - left):
     curr.next = nxt.next
     nxt.next = pre.next
     pre.next = nxt`,
+      coreLogicCpp: `for (int i = 0; i < left - 1; i++) pre = pre->next;
+ListNode* curr = pre->next;
+for (int i = 0; i < right - left; i++) {
+    ListNode* nxt = curr->next;
+    curr->next = nxt->next;
+    nxt->next = pre->next;
+    pre->next = nxt;
+}`,
       adaptationLogic: `dummy = ListNode(0, head)`,
       explanation: "Iteratively moves the next node of 'curr' to the position after 'pre', effectively reversing the segment one node at a time.",
       fullCode: `def reverse_between(head, left, right):
@@ -48,7 +66,21 @@ for _ in range(right - left):
         nxt.next = pre.next
         pre.next = nxt
         
-    return dummy.next`
+    return dummy.next`,
+      fullCodeCpp: `ListNode* reverseBetween(ListNode* head, int left, int right) {
+    [[core|ListNode* dummy = new ListNode(0, head);|Use dummy for easier head processing.|使用虛擬節點簡化首節點處理。]]
+    ListNode* pre = dummy;
+    for (int i = 0; i < left - 1; i++) pre = pre->next;
+    
+    ListNode* curr = pre->next;
+    for (int i = 0; i < right - left; i++) {
+        [[mod|ListNode* nxt = curr->next;|Extract node to move forward.|提取要往前移動的節點。]]
+        curr->next = nxt->next;
+        nxt->next = pre->next;
+        pre->next = nxt;
+    }
+    return dummy->next;
+}`
     },
     {
       id: "reverse-k-group",
@@ -60,6 +92,11 @@ for _ in range(right - left):
 if count == k:
     new_head = reverse(head, k)
     head.next = reverse_k_group(ptr, k)`,
+      coreLogicCpp: `if (count == k) {
+    ListNode* newHead = reverse(head, k);
+    head->next = reverseKGroup(curr, k);
+    return newHead;
+}`,
       adaptationLogic: `recursion`,
       explanation: "Modular reversal: check if K nodes exist, reverse them, then recursively process the remaining list.",
       fullCode: `def reverse_k_group(head, k):
@@ -71,7 +108,18 @@ if count == k:
         [[mod|new_head = reverse_n(head, k)|Subroutine to reverse K nodes.|反轉 K 個節點的子程序。]]
         head.next = reverse_k_group(curr, k)
         return new_head
-    return head`
+    return head`,
+      fullCodeCpp: `ListNode* reverseKGroup(ListNode* head, int k) {
+    ListNode* curr = head;
+    int count = 0;
+    while (curr && count < k) { curr = curr->next; count++; }
+    [[core|if (count == k) {|Only reverse if K nodes are available.|只有在有 K 個節點時才反轉。]]
+        ListNode* newHead = reverse(head, k); // Reverse sub-routine
+        head->next = reverseKGroup(curr, k);
+        return newHead;
+    }
+    return head;
+}`
     },
     {
       id: "palindrome-linked-list",
@@ -82,6 +130,9 @@ if count == k:
       coreLogic: `find_mid(head)
 second_half = reverse(mid)
 compare(first_half, second_half)`,
+      coreLogicCpp: `ListNode *slow = head, *fast = head;
+while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
+ListNode* rev = reverseList(slow);`,
       adaptationLogic: ``,
       explanation: "Find the middle using slow/fast pointers, reverse the second half, and compare values with the first half.",
       fullCode: `def is_palindrome(head):
@@ -97,7 +148,21 @@ compare(first_half, second_half)`,
     while p2:
         if p1.val != p2.val: return False
         p1, p2 = p1.next, p2.next
-    return True`
+    return True`,
+      fullCodeCpp: `bool isPalindrome(ListNode* head) {
+    [[core|ListNode *slow = head, *fast = head;|Find mid point first.|首先尋找中點。]]
+    while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
+    
+    [[mod|ListNode *prev = nullptr, *curr = slow;|Reverse the second half.|反轉後半部。]]
+    while (curr) { ListNode* nxt = curr->next; curr->next = prev; prev = curr; curr = nxt; }
+    
+    [[mod|ListNode *p1 = head, *p2 = prev;|Compare first and second half values.|比較前半部與後半部的值。]]
+    while (p2) {
+        if (p1->val != p2->val) return false;
+        p1 = p1->next; p2 = p2->next;
+    }
+    return true;
+}`
     }
   ]
 };

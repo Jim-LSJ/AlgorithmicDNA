@@ -14,7 +14,7 @@ export async function highlightWithAnnotations(code: string, lang: string = 'pyt
   if (!highlighter) {
     highlighter = await createHighlighter({
       themes: [theme],
-      langs: [lang],
+      langs: ['python', 'cpp'],
     });
   }
 

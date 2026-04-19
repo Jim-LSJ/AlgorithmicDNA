@@ -5,7 +5,7 @@ export const maxNonOverlappingIntervals: AlgorithmPattern = {
   name: "Max Non-overlapping Intervals",
   category: "Interval",
   description: "Find the maximum number of intervals that do not overlap. Equivalent to removing the minimum number of intervals.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/interval.png",
   complexity: {
     time: "O(n log n)",
     space: "O(1) extra space",

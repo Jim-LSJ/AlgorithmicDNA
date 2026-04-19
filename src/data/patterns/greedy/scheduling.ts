@@ -5,7 +5,7 @@ export const greedyScheduling: AlgorithmPattern = {
   name: "Greedy Scheduling",
   category: "Greedy",
   description: "Optimizing task or event schedules using greedy strategies.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/greedy.png",
   complexity: {
     time: "O(n log n)",
     space: "O(n) or O(1)",
@@ -19,34 +19,90 @@ export const greedyScheduling: AlgorithmPattern = {
             count += 1
             curr_end = e
     return count`,
+  coreTemplateCpp: `int scheduleTasks(vector<pair<int, int>>& tasks) {
+    [[core|sort(tasks.begin(), tasks.end(), [](auto& a, auto& b) {
+        return a.second < b.second;
+    });|Sort tasks by end time.|按結束時間排序任務。]]
+    int count = 0, currEnd = 0;
+    for (auto& task : tasks) {
+        if (task.first >= currEnd) {
+            count++;
+            currEnd = task.second;
+        }
+    }
+    return count;
+}`,
   variations: [
     {
-      id: "gas-station",
-      title: "Gas Station",
+      id: "meeting-rooms-ii",
+      title: "Meeting Rooms II",
       difficulty: "Medium",
-      leetcodeUrl: "https://leetcode.com/problems/gas-station/",
-      description: "Find the starting gas station index if you can travel around the circuit.",
-      coreLogic: `total_surplus, curr_surplus, start = 0, 0, 0
-for i in range(n):
-    total_surplus += gas[i] - cost[i]
-    curr_surplus += gas[i] - cost[i]
-    if curr_surplus < 0:
-        start = i + 1
-        curr_surplus = 0`,
-      adaptationLogic: `return start if total_surplus >= 0 else -1`,
-      explanation: "Greedily attempts to find a starting point. If the current surplus becomes negative, the start point must be after the current station.",
-      fullCode: `def can_complete_circuit(gas, cost):
-    [[core|if sum(gas) < sum(cost): return -1|If total gas is less than total cost, impossible.|若總油量小於總成本，則不可能完成。]]
+      leetcodeUrl: "https://leetcode.com/problems/meeting-rooms-ii/",
+      description: "Find the minimum number of meeting rooms required.",
+      coreLogic: `starts.sort(); ends.sort()
+if starts[s] >= ends[e]: e += 1
+else: rooms += 1`,
+      coreLogicCpp: `sort(starts.begin(), starts.end());
+sort(ends.begin(), ends.end());
+if (starts[s] >= ends[e]) e++;
+else rooms++;`,
+      adaptationLogic: `Two pointers tracking start and end times`,
+      explanation: "Sort start and end times separately. When a meeting starts before the earliest finished one ends, we need a new room. Otherwise, we can reuse a room.",
+      fullCode: `def min_meeting_rooms(intervals):
+    starts = sorted([i[0] for i in intervals])
+    ends = sorted([i[1] for i in intervals])
+    [[core|rooms = s = e = 0|Initialize room count and pointers.|初始化會議室計數與指標。]]
+    while s < len(intervals):
+        [[mod|if starts[s] >= ends[e]:|A room becomes free.|會議室空出。]]
+            e += 1
+        else:
+            [[mod|rooms += 1|Need a new room.|需要新會議室。]]
+        s += 1
+    return rooms`,
+      fullCodeCpp: `int minMeetingRooms(vector<vector<int>>& intervals) {
+    vector<int> starts, ends;
+    for (auto& i : intervals) { starts.push_back(i[0]); ends.push_back(i[1]); }
+    sort(starts.begin(), starts.end());
+    sort(ends.begin(), ends.end());
     
+    int rooms = 0, e = 0;
+    for (int s = 0; s < starts.size(); s++) {
+        [[mod|if (starts[s] >= ends[e]) e++;|Reuse room.|重複使用會議室。]]
+        else rooms++;
+    }
+    return rooms;
+}`
+    },
+    {
+      id: "two-city-scheduling",
+      title: "Two City Scheduling",
+      difficulty: "Medium",
+      leetcodeUrl: "https://leetcode.com/problems/two-city-scheduling/",
+      description: "Minimize the cost of flying 2N people to two cities, with N people in each city.",
+      coreLogic: `costs.sort(key=lambda x: x[0] - x[1])
+sum(first_half_A) + sum(second_half_B)`,
+      coreLogicCpp: `sort(costs.begin(), costs.end(), [](auto& a, auto& b) {
+    return (a[0] - a[1]) < (b[0] - b[1]);
+});`,
+      adaptationLogic: `Sorting by relative cost (difference)`,
+      explanation: "Sort people by the price difference between City A and City B. Send the first half (with lowest difference favoring A) to City A and the rest to City B.",
+      fullCode: `def two_city_sched_cost(costs):
+    [[core|costs.sort(key=lambda x: x[0] - x[1])|Sort by the benefit of choosing City A over City B.|按選擇 A 城相對於 B 城的效益排序。]]
     total = 0
-    start = 0
-    for i in range(len(gas)):
-        total += gas[i] - cost[i]
-        [[mod|if total < 0:|If oil runs out, the starting point must be further ahead.|若油量耗盡，起點必須在更後面。]]
-            total = 0
-            start = i + 1
-            
-    return start`
+    n = len(costs) // 2
+    for i in range(n):
+        [[mod|total += costs[i][0] + costs[i + n][1]|Send first half to A, second half to B.|前半部去 A 城，後半部去 B 城。]]
+    return total`,
+      fullCodeCpp: `int twoCitySchedCost(vector<vector<int>>& costs) {
+    [[core|sort(costs.begin(), costs.end(), [](auto& a, auto& b) {
+        return (a[0] - a[1]) < (b[0] - b[1]);
+    });|Sort by relative cost difference.|按相對成本差異排序。]]
+    int total = 0, n = costs.size() / 2;
+    for (int i = 0; i < n; i++) {
+        total += costs[i][0] + costs[i + n][1];
+    }
+    return total;
+}`
     }
   ]
 };

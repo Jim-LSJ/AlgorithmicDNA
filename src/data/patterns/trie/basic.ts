@@ -22,6 +22,24 @@ class Trie:
             [[mod|if char not in node.children: node.children[char] = TrieNode()|Create new node if path doesn't exist.|如果路徑不存在則創建新節點。]]
             node = node.children[char]
         node.is_end = True`,
+  coreTemplateCpp: `struct TrieNode {
+    [[core|TrieNode* children[26] = {nullptr};|Fixed size array for English alphabet.|針對英文字母表的固定大小陣列。]]
+    bool isEnd = false;
+};
+
+class Trie {
+    TrieNode* root = new TrieNode();
+public:
+    void insert(string word) {
+        TrieNode* node = root;
+        for (char c : word) {
+            int i = c - 'a';
+            [[mod|if (!node->children[i]) node->children[i] = new TrieNode();|Allocate new child if missing.|如果缺失，則分配新的子節點。]]
+            node = node->children[i];
+        }
+        node->isEnd = true;
+    }
+};`,
   variations: [
     {
       id: "word-dictionary-search",
@@ -35,6 +53,14 @@ class Trie:
 else:
     if char not in node.children: return False
     return dfs(index + 1, node.children[char])`,
+      coreLogicCpp: `if (word[idx] == '.') {
+    for (int i = 0; i < 26; i++) {
+        if (node->children[i] && dfs(word, idx + 1, node->children[i])) return true;
+    }
+} else {
+    int i = word[idx] - 'a';
+    return node->children[i] && dfs(word, idx + 1, node->children[i]);
+}`,
       adaptationLogic: `dfs(0, self.root)`,
       explanation: "Add a wildcard search capability to Trie using DFS to explore all possible children when '.' is encountered.",
       fullCode: `class WordDictionary:
@@ -52,7 +78,22 @@ else:
             else:
                 if char not in node.children: return False
                 return dfs(idx + 1, node.children[char])
-        return dfs(0, self.root)`
+        return dfs(0, self.root)`,
+      fullCodeCpp: `class WordDictionary {
+    TrieNode* root = new TrieNode();
+    bool dfs(const string& word, int idx, TrieNode* node) {
+        if (idx == word.size()) return node->isEnd;
+        if (word[idx] == '.') {
+            [[mod|for (auto child : node->children)|Recursive check for wildcard.|針對通配符進行遞迴檢查。]]
+                if (child && dfs(word, idx + 1, child)) return true;
+            return false;
+        }
+        int i = word[idx] - 'a';
+        return node->children[i] && dfs(word, idx + 1, node->children[i]);
+    }
+public:
+    bool search(string word) { return dfs(word, 0, root); }
+};`
     },
     {
       id: "word-search-ii",
@@ -62,6 +103,8 @@ else:
       description: "Find all words from a dictionary that exist in a 2D grid.",
       coreLogic: `dfs(r, c, trie.root, path)
 if node.is_end: res.add(path); node.is_end = False`,
+      coreLogicCpp: `if (node->isEnd) { res.push_back(node->word); node->isEnd = false; }
+if (board[r][c] == '#' || !node->children[board[r][c]-'a']) return;`,
       adaptationLogic: ``,
       explanation: "Optimized multi-word search by pruning the matrix backtracking DFS using a Trie of target words.",
       fullCode: `def find_words(board, words):
@@ -80,7 +123,22 @@ if node.is_end: res.add(path); node.is_end = False`,
     for r in range(R):
         for c in range(C):
             dfs(r, c, trie.root, "")
-    return list(res)`
+    return list(res)`,
+      fullCodeCpp: `void dfs(vector<vector<char>>& board, int r, int c, TrieNode* node, vector<string>& res) {
+    char ch = board[r][c];
+    if (ch == '#' || !node->children[ch - 'a']) return;
+    node = node->children[ch - 'a'];
+    if (node->isEnd) {
+        [[core|res.push_back(node->word);|Store word and mark end as false for uniqueness.|存儲單字並將結尾標記為 false 以確保唯一性。]]
+        node->isEnd = false;
+    }
+    board[r][c] = '#';
+    if (r > 0) dfs(board, r - 1, c, node, res);
+    if (c > 0) dfs(board, r, c - 1, node, res);
+    if (r < R - 1) dfs(board, r + 1, c, node, res);
+    if (c < C - 1) dfs(board, r, c + 1, node, res);
+    board[r][c] = ch; // [[mod|Backtrack|回溯]]
+}`
     },
     {
       id: "map-sum-pairs",
@@ -91,6 +149,8 @@ if node.is_end: res.add(path); node.is_end = False`,
       coreLogic: `def insert(key, val):
     delta = val - self.map.get(key, 0)
     for char in key: node.score += delta`,
+      coreLogicCpp: `int delta = val - counts[key];
+for (char c : key) node->score += delta;`,
       adaptationLogic: ``,
       explanation: "Each node in the Trie stores the sum of 'values' of all words passing through it, allowing O(PrefixLength) subtotal queries.",
       fullCode: `class MapSum:
@@ -112,7 +172,32 @@ if node.is_end: res.add(path); node.is_end = False`,
         for c in prefix:
             if c not in node['children']: return 0
             node = node['children'][c]
-        [[mod|return node['score']|Return precomputed total.|返回預先計算好的總數。]]`
+        [[mod|return node['score']|Return precomputed total.|返回預先計算好的總數。]]`,
+      fullCodeCpp: `class MapSum {
+    struct Node {
+        int score = 0;
+        Node* next[128] = {nullptr}; // Handle wider character range
+    } *root = new Node();
+    unordered_map<string, int> m;
+public:
+    void insert(string key, int val) {
+        int delta = val - m[key];
+        m[key] = val;
+        Node* node = root;
+        for (char c : key) {
+            [[mod|if (!node->next[c]) node->next[c] = new Node();|Allocate node if needed.|需要時分配節點。]]
+            node = node->next[c];
+            node->score += delta;
+        }
+    }
+    int sum(string prefix) {
+        Node* node = root;
+        for (char c : prefix) {
+            if (!(node = node->next[c])) return 0;
+        }
+        return node->score;
+    }
+};`
     }
   ]
 };

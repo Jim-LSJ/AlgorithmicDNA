@@ -13,10 +13,13 @@ export interface VariationProblem {
   description: string;
   description_zh?: string;
   coreLogic: string;
+  coreLogicCpp?: string;
   adaptationLogic: string;
+  adaptationLogicCpp?: string;
   explanation: string;
   explanation_zh?: string;
-  fullCode: string; // The complete code for this variation
+  fullCode: string;
+  fullCodeCpp?: string;
 }
 
 export interface AlgorithmPattern {
@@ -32,5 +35,6 @@ export interface AlgorithmPattern {
     space: string;
   };
   coreTemplate: string;
+  coreTemplateCpp?: string;
   variations: VariationProblem[];
 }

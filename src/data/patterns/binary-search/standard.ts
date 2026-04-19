@@ -20,6 +20,16 @@ export const standardBinarySearch: AlgorithmPattern = {
         else:
             [[mod|right = mid - 1|Target is in the left half.|目標在左半部。]]
     return -1`,
+  coreTemplateCpp: `int binarySearch(vector<int>& nums, int target) {
+    [[core|int left = 0, right = nums.size() - 1;|Define range.|定義範圍。]]
+    while (left <= right) {
+        [[core|int mid = left + (right - left) / 2;|Calculate pivot safely.|安全地計算中心點。]]
+        if (nums[mid] == target) return mid;
+        [[mod|if (nums[mid] < target) left = mid + 1;|Shrink left boundary.|縮小左邊界。]]
+        else right = mid - 1;
+    }
+    return -1;
+}`,
   variations: [
     {
       id: "search-2d-matrix",
@@ -29,6 +39,8 @@ export const standardBinarySearch: AlgorithmPattern = {
       description: "Search for a value in an m x n matrix where each row is sorted and the first integer of each row is greater than the last integer of the previous row.",
       coreLogic: `row = mid // n; col = mid % n
 if matrix[row][col] == target: return True`,
+      coreLogicCpp: `int r = mid / n, c = mid % n;
+if (matrix[r][c] == target) return true;`,
       adaptationLogic: `total_elements = m * n
 left, right = 0, total_elements - 1`,
       explanation: "Treat the 2D matrix as a virtual 1D array using division and modulo for coordinate mapping.",
@@ -45,7 +57,20 @@ left, right = 0, total_elements - 1`,
             left = mid + 1
         else:
             right = mid - 1
-    return False`
+    return False`,
+      fullCodeCpp: `bool searchMatrix(vector<vector<int>>& matrix, int target) {
+    if (matrix.empty()) return false;
+    int m = matrix.size(), n = matrix[0].size();
+    [[core|int l = 0, r = m * n - 1;|Binary search in virtual 1D space.|在虛擬 1D 空間進行二分搜尋。]]
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        [[mod|int val = matrix[mid / n][mid % n];|Map index to 2D matrix.|將索引映射到 2D 矩陣。]]
+        if (val == target) return true;
+        if (val < target) l = mid + 1;
+        else r = mid - 1;
+    }
+    return false;
+}`
     },
     {
       id: "guess-number",
@@ -55,6 +80,8 @@ left, right = 0, total_elements - 1`,
       description: "Guess a pick number from 1 to n using an API that returns if your guess is higher, lower, or correct.",
       coreLogic: `res = guess(mid)
 if res == 0: return mid`,
+      coreLogicCpp: `int res = guess(mid);
+if (res == 0) return mid;`,
       adaptationLogic: `left, right = 1, n`,
       explanation: "Classic binary search applied to a continuous range of integers.",
       fullCode: `def guess_number(n):
@@ -66,7 +93,18 @@ if res == 0: return mid`,
         if res < 0:
             right = mid - 1
         else:
-            left = mid + 1`
+            left = mid + 1`,
+      fullCodeCpp: `int guessNumber(int n) {
+    int left = 1, right = n;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        int res = guess(mid);
+        [[mod|if (res == 0) return mid;|Correct guess.|猜對了。]]
+        if (res == -1) right = mid - 1;
+        else left = mid + 1;
+    }
+    return -1;
+}`
     },
     {
       id: "first-bad-version",
@@ -77,6 +115,8 @@ if res == 0: return mid`,
       coreLogic: `if isBadVersion(mid):
     ans = mid; right = mid - 1
 else: left = mid + 1`,
+      coreLogicCpp: `if (isBadVersion(mid)) { ans = mid; r = mid - 1; }
+else l = mid + 1;`,
       adaptationLogic: `left, right = 1, n`,
       explanation: "Binary search to find the 'boundary' between two properties (good vs bad).",
       fullCode: `def first_bad_version(n):
@@ -89,7 +129,17 @@ else: left = mid + 1`,
             right = mid - 1
         else:
             left = mid + 1
-    return ans`
+    return ans`,
+      fullCodeCpp: `int firstBadVersion(int n) {
+    int l = 1, r = n, ans = n;
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        [[mod|if (isBadVersion(mid)) {|Check if current mid is bad.|檢查當前中點是否錯誤。]]
+            ans = mid; r = mid - 1;
+        } else l = mid + 1;
+    }
+    return ans;
+}`
     }
   ]
 };

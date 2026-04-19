@@ -5,7 +5,7 @@ export const combinations: AlgorithmPattern = {
   name: "Combinations",
   category: "Backtracking",
   description: "Select k elements from a set of n elements regardless of order.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/backtracking.png",
   complexity: {
     time: "O(k * C(n, k))",
     space: "O(k)",
@@ -22,5 +22,13 @@ export const combinations: AlgorithmPattern = {
             [[mod|curr.pop()|Backtrack.|回溯。]]
     backtrack(1, [])
     return res`,
+  coreTemplateCpp: `void backtrack(int n, int k, int start, vector<int>& curr, vector<vector<int>>& res) {
+    [[core|if (curr.size() == k) { res.push_back(curr); return; }|Base case: target size reached.|基底情況：達到目標大小。]]
+    for (int i = start; i <= n; ++i) {
+        curr.push_back(i);
+        [[mod|backtrack(n, k, i + 1, curr, res);|Pick next elements from i + 1.|從 i + 1 開始挑選下一個元素。]]
+        [[mod|curr.pop_back();|Backtrack.|回溯。]]
+    }
+}`,
   variations: []
 };

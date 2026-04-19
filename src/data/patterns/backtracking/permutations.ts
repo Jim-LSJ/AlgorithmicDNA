@@ -23,6 +23,15 @@ export const permutations: AlgorithmPattern = {
                 [[mod|curr.pop()|Backtrack: remove element for other possibilities.|回溯：移除元素以嘗試其他可能性。]]
     backtrack([])
     return res`,
+  coreTemplateCpp: `void backtrack(vector<int>& nums, vector<int>& curr, vector<bool>& used, vector<vector<int>>& res) {
+    [[core|if (curr.size() == nums.size()) { res.push_back(curr); return; }|Base case Reached.|達到基底情況。]]
+    for (int i = 0; i < nums.size(); ++i) {
+        if (used[i]) continue;
+        [[mod|used[i] = true; curr.push_back(nums[i]);|Make choice.|做出選擇。]]
+        backtrack(nums, curr, used, res);
+        [[mod|curr.pop_back(); used[i] = false;|Undo choice (Backtrack).|撤銷選擇（回溯）。]]
+    }
+}`,
   variations: [
     {
       id: "permutations-ii",
@@ -32,6 +41,8 @@ export const permutations: AlgorithmPattern = {
       description: "Generate all unique permutations when duplicates exist in the input.",
       coreLogic: `nums.sort()
 if used[i] or (i > 0 and nums[i] == nums[i-1] and not used[i-1]): continue`,
+      coreLogicCpp: `sort(nums.begin(), nums.end());
+if (used[i] || (i > 0 && nums[i] == nums[i-1] && !used[i-1])) continue;`,
       adaptationLogic: `used = [False] * len(nums)`,
       explanation: "Sort the input and skip identical consecutive elements unless the previous identical element is currently being used in the current recursive path.",
       fullCode: `def permute_unique(nums):
@@ -47,7 +58,25 @@ if used[i] or (i > 0 and nums[i] == nums[i-1] and not used[i-1]): continue`,
             backtrack(curr)
             used[i] = False; curr.pop()
     backtrack([])
-    return res`
+    return res`,
+      fullCodeCpp: `vector<vector<int>> permuteUnique(vector<int>& nums) {
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> res;
+    vector<int> curr;
+    vector<bool> used(nums.size(), false);
+    
+    function<void()> backtrack = [&]() {
+        if (curr.size() == nums.size()) { res.push_back(curr); return; }
+        for (int i = 0; i < nums.size(); ++i) {
+            [[mod|if (used[i] || (i > 0 && nums[i] == nums[i-1] && !used[i-1])) continue;|Pruning duplicates.|剪枝重複項。]]
+            used[i] = true; curr.push_back(nums[i]);
+            backtrack();
+            used[i] = false; curr.pop_back();
+        }
+    };
+    backtrack();
+    return res;
+}`
     },
     {
       id: "letter-combinations",
@@ -57,6 +86,9 @@ if used[i] or (i > 0 and nums[i] == nums[i-1] and not used[i-1]): continue`,
       description: "Return all possible letter combinations that the digits could represent.",
       coreLogic: `for letter in mapping[digits[index]]:
     backtrack(index + 1, path + letter)`,
+      coreLogicCpp: `for (char c : mapping[digits[idx]]) {
+    backtrack(idx + 1, path + c);
+}`,
       adaptationLogic: ``,
       explanation: "Mapping-based backtracking where each digit index defines the choice space for the next recursive level.",
       fullCode: `def letter_combinations(digits):
@@ -69,7 +101,20 @@ if used[i] or (i > 0 and nums[i] == nums[i-1] and not used[i-1]): continue`,
         [[mod|for char in mapping[digits[idx]]:|Iterate through possible characters for the current digit.|遍歷當前數字的所有可能字元。]]
             backtrack(idx + 1, path + char)
     backtrack(0, "")
-    return res`
+    return res`,
+      fullCodeCpp: `vector<string> letterCombinations(string digits) {
+    if (digits.empty()) return {};
+    vector<string> res;
+    vector<string> mapping = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+    
+    function<void(int, string)> backtrack = [&](int idx, string path) {
+        if (idx == digits.length()) { res.push_back(path); return; }
+        [[mod|for (char c : mapping[digits[idx] - '0'])|Recurse through digit mapping.|透過數字映射進行遞迴。]]
+            backtrack(idx + 1, path + c);
+    };
+    backtrack(0, "");
+    return res;
+}`
     },
     {
       id: "next-permutation",
@@ -80,6 +125,7 @@ if used[i] or (i > 0 and nums[i] == nums[i-1] and not used[i-1]): continue`,
       coreLogic: `find idx where nums[i] < nums[i+1]
 find target to swap with idx
 reverse the suffix`,
+      coreLogicCpp: `next_permutation(nums.begin(), nums.end());`,
       adaptationLogic: ``,
       explanation: "A clever in-place algorithm that finds the pivot of the lexicographical order and rearranges the smallest suffix to increment the value minimally.",
       fullCode: `def next_permutation(nums):
@@ -95,7 +141,14 @@ reverse the suffix`,
     [[mod|l, r = i + 1, n - 1|Step 3: reverse the suffix to get the smallest order.|步驟 3：反轉後綴以獲得最小排序。]]
     while l < r:
         nums[l], nums[r] = nums[r], nums[l]
-        l += 1; r -= 1`
+        l += 1; r -= 1`,
+      fullCodeCpp: `void nextPermutation(vector<int>& nums) {
+    [[core|next_permutation(nums.begin(), nums.end());|STL provides a direct built-in for this.|STL 提供了直接的內建函式來處理此問題。]]
+    // If manual implementation is needed, it follows the Python logic:
+    // 1. Find pivot i such that nums[i] < nums[i+1]
+    // 2. Find nums[j] > nums[i] from right and swap
+    // 3. Reverse nums[i+1...end]
+}`
     }
   ]
 };

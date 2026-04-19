@@ -5,7 +5,7 @@ export const wordSearch: AlgorithmPattern = {
   name: "Word Search (Matrix Backtracking)",
   category: "Backtracking",
   description: "Searching for a specific string pattern within a 2D grid/matrix.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/backtracking.png",
   complexity: {
     time: "O(M * N * 3^L) where L is word length",
     space: "O(L)",
@@ -23,5 +23,17 @@ export const wordSearch: AlgorithmPattern = {
         [[core|board[r][c] = temp|Restore for other paths (Unmark).|為其他路徑恢復（取消標記）。]]
         return res
     return any(backtrack(r, c, 0) for r in range(R) for c in range(C))`,
+  coreTemplateCpp: `bool backtrack(vector<vector<char>>& board, string& word, int r, int c, int idx) {
+    if (idx == word.length()) return true;
+    if (r < 0 || r >= R || c < 0 || c >= C || board[r][c] != word[idx]) return false;
+    
+    [[core|char temp = board[r][c]; board[r][c] = '#';|Mark cell.|標記格位。]]
+    int dr[] = {0, 0, 1, -1}, dc[] = {1, -1, 0, 0};
+    for (int i = 0; i < 4; i++) {
+        if (backtrack(board, word, r + dr[i], c + dc[i], idx + 1)) return true;
+    }
+    [[core|board[r][c] = temp;|Unmark cell.|取消標記。]]
+    return false;
+}`,
   variations: []
 };

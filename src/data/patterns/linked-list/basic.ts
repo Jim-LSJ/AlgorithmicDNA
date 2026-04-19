@@ -5,7 +5,7 @@ export const linkedListBasic: AlgorithmPattern = {
   name: "LinkedList Traverse & Dummy Node",
   category: "Linked List",
   description: "Basic manipulation and the powerful 'Dummy Node' technique for handling edge cases like head removal.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/linked-list.png",
   complexity: {
     time: "O(n)",
     space: "O(1) extra space",
@@ -19,5 +19,16 @@ export const linkedListBasic: AlgorithmPattern = {
         else:
             curr = curr.next
     return dummy.next`,
+  coreTemplateCpp: `ListNode* deleteNode(ListNode* head, int val) {
+    [[core|ListNode* dummy = new ListNode(0, head);|Dummy node handles head deletion cases.|虛擬節點處理頭部刪除的情況。]]
+    ListNode* curr = dummy;
+    while (curr->next) {
+        [[mod|if (curr->next->val == val)|Target matched.|符合目標。]]
+            curr->next = curr->next->next;
+        else
+            curr = curr->next;
+    }
+    return dummy->next;
+}`,
   variations: []
 };

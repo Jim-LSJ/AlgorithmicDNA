@@ -5,7 +5,7 @@ export const nonFixedSlidingWindow: AlgorithmPattern = {
   name: "Non-fixed Size Sliding Window",
   category: "Sliding Window",
   description: "Window size varies dynamically based on specific conditions.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/sliding-window.png",
   complexity: {
     time: "O(n)",
     space: "O(k) where k is the character set or window size",
@@ -21,6 +21,17 @@ export const nonFixedSlidingWindow: AlgorithmPattern = {
             
         # Update: Calculate result based on valid window
     return result`,
+  coreTemplateCpp: `void slidingWindow(vector<int>& nums) {
+    [[core|int left = 0;|Window left boundary.|視窗左邊界。]]
+    for (int right = 0; right < nums.size(); right++) {
+        // Expand window logic
+        [[core|while (isInvalid()) {|Shrink until valid.|縮小直到恢復有效性。]]
+            // Shrink from left logic
+            [[mod|left++;|Advance left.|前進左側。]]
+        }
+        // Process results
+    }
+}`,
   variations: [
     {
       id: "longest-substring-non-repeating",
@@ -33,6 +44,9 @@ left = 0
 for right, char in enumerate(s):
     if char in lookup:
         left = max(left, lookup[char] + 1)`,
+      coreLogicCpp: `if (lookup.count(s[right])) {
+    left = max(left, lookup[s[right]] + 1);
+}`,
       adaptationLogic: `    lookup[char] = right
     res = max(res, right - left + 1)`,
       explanation: "Dynamic window size. When a duplicate is found, the window's left boundary 'jumps' to skip the first occurrence.",
@@ -48,7 +62,19 @@ for right, char in enumerate(s):
         lookup[s[right]] = right
         [[mod|res = max(res, right - left + 1)|Update longest length.|更新最長長度。]]
         
-    return res`
+    return res`,
+      fullCodeCpp: `int lengthOfLongestSubstring(string s) {
+    unordered_map<char, int> lookup;
+    int left = 0, res = 0;
+    for (int right = 0; right < s.length(); right++) {
+        [[mod|if (lookup.count(s[right])) {|Found duplicate; jump left.|發現重複；左側跳轉。]]
+            left = max(left, lookup[s[right]] + 1);
+        }
+        lookup[s[right]] = right;
+        res = max(res, right - left + 1);
+    }
+    return res;
+}`
     }
   ]
 };

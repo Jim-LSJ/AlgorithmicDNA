@@ -17,19 +17,32 @@ const PatternPage = async ({ params }: PatternPageProps) => {
     notFound();
   }
 
-  // Pre-highlight all variations on the server
+  // Pre-highlight Python variations
   const highlightedVariations = await Promise.all(
     pattern.variations.map(async (v: any) => {
-      const templateResult = await highlightWithAnnotations(pattern.coreTemplate);
-      const variationResult = await highlightWithAnnotations(v.fullCode);
+      const templateResult = await highlightWithAnnotations(pattern.coreTemplate, 'python');
+      const variationResult = await highlightWithAnnotations(v.fullCode, 'python');
       return { templateResult, variationResult };
     })
   );
 
+  // Pre-highlight C++ variations if available
+  let highlightedVariationsCpp: any[] = [];
+  if (pattern.coreTemplateCpp) {
+    highlightedVariationsCpp = await Promise.all(
+      pattern.variations.map(async (v: any) => {
+        const templateResult = await highlightWithAnnotations(pattern.coreTemplateCpp!, 'cpp');
+        const variationResult = await highlightWithAnnotations(v.fullCodeCpp || '', 'cpp');
+        return { templateResult, variationResult };
+      })
+    );
+  }
+
   return (
     <PatternPageClient 
       pattern={pattern} 
-      highlightedVariations={highlightedVariations} 
+      highlightedVariations={highlightedVariations}
+      highlightedVariationsCpp={highlightedVariationsCpp}
     />
   );
 };

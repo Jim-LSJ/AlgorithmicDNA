@@ -5,7 +5,7 @@ export const intervalCoverage: AlgorithmPattern = {
   name: "Min Intervals to Cover Range",
   category: "Interval",
   description: "Find the minimum number of intervals needed to completely cover a specific time range [T_start, T_end].",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/interval.png",
   complexity: {
     time: "O(n log n)",
     space: "O(1) extra",

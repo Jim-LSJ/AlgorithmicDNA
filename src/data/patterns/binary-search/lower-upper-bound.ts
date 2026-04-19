@@ -18,6 +18,15 @@ export const lowerUpperBound: AlgorithmPattern = {
         else:
             left = mid + 1
     return left # First index >= target`,
+  coreTemplateCpp: `int lowerBound(vector<int>& nums, int target) {
+    [[core|int left = 0, right = nums.size();|Right is N for end insertion.|右邊界為 N 以處理結尾插入。]]
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        [[mod|if (nums[mid] >= target) right = mid;|Include current mid in potential result.|將目前中點納入潛在結果。]]
+        else left = mid + 1;
+    }
+    return left;
+}`,
   variations: [
     {
       id: "search-range",
@@ -28,6 +37,9 @@ export const lowerUpperBound: AlgorithmPattern = {
       coreLogic: `first = lower_bound(nums, target)
 if first == len(nums) or nums[first] != target: return [-1, -1]
 last = lower_bound(nums, target + 1) - 1`,
+      coreLogicCpp: `int first = lower_bound(nums.begin(), nums.end(), target) - nums.begin();
+if (first == nums.size() || nums[first] != target) return {-1, -1};
+int last = lower_bound(nums.begin(), nums.end(), target + 1) - nums.begin() - 1;`,
       adaptationLogic: ``,
       explanation: "Use lower bound twice: once for the target, and once for (target + 1) to find the boundary of the range.",
       fullCode: `def search_range(nums, target):
@@ -44,7 +56,14 @@ last = lower_bound(nums, target + 1) - 1`,
     start = get_bound(True)
     if start == len(nums) or nums[start] != target: return [-1, -1]
     end = get_bound(False) - 1
-    return [start, end]`
+    return [start, end]`,
+      fullCodeCpp: `vector<int> searchRange(vector<int>& nums, int target) {
+    auto it1 = lower_bound(nums.begin(), nums.end(), target);
+    [[core|if (it1 == nums.end() || *it1 != target) return {-1, -1};|Handle target not found.|處理未找到目標的情況。]]
+    
+    auto it2 = upper_bound(nums.begin(), nums.end(), target);
+    [[mod|return {(int)(it1 - nums.begin()), (int)(it2 - nums.begin() - 1)};|Return start and end indices.|返回起始與結束索引。]]
+}`
     },
     {
       id: "search-insert-position",
@@ -53,6 +72,7 @@ last = lower_bound(nums, target + 1) - 1`,
       leetcodeUrl: "https://leetcode.com/problems/search-insert-position/",
       description: "Return the index where the target would be if it were inserted in order.",
       coreLogic: `return lower_bound(nums, target)`,
+      coreLogicCpp: `return lower_bound(nums.begin(), nums.end(), target) - nums.begin();`,
       adaptationLogic: ``,
       explanation: "Standard lower bound returns the exact insertion point to maintain sorted order.",
       fullCode: `def search_insert(nums, target):
@@ -61,7 +81,16 @@ last = lower_bound(nums, target + 1) - 1`,
         mid = (l + r) // 2
         [[mod|if nums[mid] < target: l = mid + 1|Must be strictly less to find insertion point.|必須嚴格小於以找到正確插入點。]]
         else: r = mid
-    return l`
+    return l`,
+      fullCodeCpp: `int searchInsert(vector<int>& nums, int target) {
+    [[core|int l = 0, r = nums.size();|Cover range [0, N].|涵蓋 [0, N] 的範圍。]]
+    while (l < r) {
+        int mid = l + (r - l) / 2;
+        [[mod|if (nums[mid] < target) l = mid + 1;|Normal binary search expansion.|標準二分搜尋擴展。]]
+        else r = mid;
+    }
+    return l;
+}`
     },
     {
       id: "h-index-ii",
@@ -73,6 +102,8 @@ last = lower_bound(nums, target + 1) - 1`,
     right = mid
 else:
     left = mid + 1`,
+      coreLogicCpp: `if (citations[mid] >= n - mid) r = mid - 1;
+else l = mid + 1;`,
       adaptationLogic: `return n - left`,
       explanation: "Binary search for the first paper where citations[mid] >= remaining_papers.",
       fullCode: `def h_index(citations):
@@ -84,7 +115,18 @@ else:
             r = mid - 1
         else:
             l = mid + 1
-    return n - l`
+    return n - l`,
+      fullCodeCpp: `int hIndex(vector<int>& citations) {
+    int n = citations.size(), l = 0, r = n - 1;
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        [[mod|if (citations[mid] >= n - mid)|Satisfies H-index condition.|滿足 H-index 條件。]]
+            r = mid - 1;
+        else
+            l = mid + 1;
+    }
+    return n - l;
+}`
     }
   ]
 };

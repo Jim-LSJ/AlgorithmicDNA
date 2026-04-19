@@ -5,7 +5,7 @@ export const knapsackPattern: AlgorithmPattern = {
   name: "Knapsack (背包問題)",
   category: "Dynamic Programming",
   description: "The classic family of knapsack problems: 0/1, Complete, and Multiple Knapsack.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/dp.png",
   complexity: {
     time: "O(n * W)",
     space: "O(W) with optimization",

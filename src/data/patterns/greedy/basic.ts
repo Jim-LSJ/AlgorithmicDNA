@@ -18,6 +18,19 @@ export const greedyPattern: AlgorithmPattern = {
             res += item.value
             update_limit(item)
     return res`,
+  coreTemplateCpp: `int greedyExample(vector<Item>& items) {
+    [[core|sort(items.begin(), items.end(), [](auto& a, auto& b) {
+        return (double)a.profit/a.weight > (double)b.profit/b.weight;
+    });|Sort by greedy criterion.|按貪婪準則排序。]]
+    int res = 0;
+    for (auto& item : items) {
+        [[mod|if (canFit(item)) {|Local optimal choice.|局部最優選擇。]]
+            res += item.value;
+            updateLimit(item);
+        }
+    }
+    return res;
+}`,
   variations: [
     {
       id: "gas-station",
@@ -27,6 +40,8 @@ export const greedyPattern: AlgorithmPattern = {
       description: "Find the starting gas station index that allows you to travel around the circuit once.",
       coreLogic: `total += gas - cost; curr += gas - cost
 if curr < 0: start = i + 1; curr = 0`,
+      coreLogicCpp: `total += g - c; curr += g - c;
+if (curr < 0) { start = i + 1; curr = 0; }`,
       adaptationLogic: ``,
       explanation: "Greedy observation: If you can't reach station B from A, then NO station between A and B can reach B. The answer must be after B.",
       fullCode: `def can_complete_circuit(gas, cost):
@@ -38,7 +53,20 @@ if curr < 0: start = i + 1; curr = 0`,
         [[mod|if curr_gas < 0:|Cannot reach next station, reset start point.|無法到達下一站，重置起始點。]]
             start = i + 1
             curr_gas = 0
-    return start`
+    return start`,
+      fullCodeCpp: `int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+    int total = 0, curr = 0, start = 0;
+    for (int i = 0; i < gas.size(); i++) {
+        int diff = gas[i] - cost[i];
+        total += diff;
+        curr += diff;
+        [[mod|if (curr < 0)|Greedy skip: start must be after i.|貪婪跳過：起始點必在 i 之後。]] {
+            start = i + 1;
+            curr = 0;
+        }
+    }
+    return (total < 0) ? -1 : start;
+}`
     },
     {
       id: "jump-game-ii",
@@ -48,6 +76,8 @@ if curr < 0: start = i + 1; curr = 0`,
       description: "Find the minimum number of jumps to reach the last index.",
       coreLogic: `max_reach = max(max_reach, i + nums[i])
 if i == end: count += 1; end = max_reach`,
+      coreLogicCpp: `maxReach = max(maxReach, i + nums[i]);
+if (i == stepEnd) { jumps++; stepEnd = maxReach; }`,
       adaptationLogic: `Implicit BFS approach`,
       explanation: "Maintain the furthest reach possible from all indices in the current jump range. Increment jumps whenever we reach the 'end' of the current jump range.",
       fullCode: `def jump(nums):
@@ -57,7 +87,18 @@ if i == end: count += 1; end = max_reach`,
         [[mod|furthest = max(furthest, i + nums[i])|Update maximum reach seen so far.|更新目前所見的最大可達範圍。]]
         if i == end:
             [[mod|jumps += 1; end = furthest|Must make another jump.|必須再跳一次。]]
-    return jumps`
+    return jumps`,
+      fullCodeCpp: `int jump(vector<int>& nums) {
+    int n = nums.size(), jumps = 0, end = 0, furthest = 0;
+    for (int i = 0; i < n - 1; i++) {
+        [[mod|furthest = max(furthest, i + nums[i]);|Track maximum reachable index.|追踪最大可達索引。]]
+        if (i == end) {
+            jumps++;
+            end = furthest;
+        }
+    }
+    return jumps;
+}`
     },
     {
       id: "task-scheduler",
@@ -68,6 +109,10 @@ if i == end: count += 1; end = max_reach`,
       coreLogic: `max_freq = max(counts.values())
 num_max_freq = list(counts.values()).count(max_freq)
 return max(len(tasks), (max_freq - 1) * (n + 1) + num_max_freq)`,
+      coreLogicCpp: `int max_f = 0, num_max_f = 0;
+for (auto& p : counts) max_f = max(max_f, p.second);
+for (auto& p : counts) if (p.second == max_f) num_max_f++;
+return max((int)tasks.size(), (max_f - 1) * (n + 1) + num_max_f);`,
       adaptationLogic: `Math formula vs Heap simulation`,
       explanation: "The bottleneck is the most frequent task. Calculate the idle slots forced by this task, then fill them with other tasks.",
       fullCode: `def least_interval(tasks, n):
@@ -76,7 +121,18 @@ return max(len(tasks), (max_freq - 1) * (n + 1) + num_max_freq)`,
     [[core|num_max_f = collections.Counter(counts.values())[max_f]|Count tasks with that highest frequency.|計算具有該最高頻率的任務數量。]]
     
     [[mod|slots = (max_f - 1) * (n + 1) + num_max_f|Theoretical minimum time.|理論上的最小時間。]]
-    return max(len(tasks), slots)`
+    return max(len(tasks), slots)`,
+      fullCodeCpp: `int leastInterval(vector<char>& tasks, int n) {
+    unordered_map<char, int> counts;
+    for (char t : tasks) counts[t]++;
+    int max_f = 0;
+    for (auto& p : counts) max_f = max(max_f, p.second);
+    int num_max_f = 0;
+    for (auto& p : counts) if (p.second == max_f) num_max_f++;
+    
+    [[mod|int result = (max_f - 1) * (n + 1) + num_max_f;|Minimum intervals needed.|所需最小間隔。]]
+    return max((int)tasks.size(), result);
+}`
     }
   ]
 };

@@ -5,7 +5,7 @@ export const lcaPattern: AlgorithmPattern = {
   name: "Lowest Common Ancestor (LCA)",
   category: "Binary Tree",
   description: "Find the lowest common ancestor of two given nodes in a binary tree.",
-  imageUrl: "/patterns/sorting.png",
+  imageUrl: "/patterns/binary-tree.png",
   complexity: {
     time: "O(n)",
     space: "O(h) for recursion stack",

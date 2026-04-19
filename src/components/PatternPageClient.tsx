@@ -9,22 +9,32 @@ import { ChevronLeft, ExternalLink, Dna } from 'lucide-react';
 import Link from 'next/link';
 import { AlgorithmPattern } from '@/types';
 import CodeDiffViewerClient from '@/components/CodeDiffViewerClient';
+import CodeLanguageSelector from '@/components/CodeLanguageSelector';
 
 interface PatternPageClientProps {
   pattern: AlgorithmPattern;
   highlightedVariations: any[]; // Pre-highlighted results
+  highlightedVariationsCpp?: any[]; // For C++ results (if available)
 }
 
-const PatternPageClient: React.FC<PatternPageClientProps> = ({ pattern, highlightedVariations }) => {
-  const { t, language } = useLanguage();
+const PatternPageClient: React.FC<PatternPageClientProps> = ({ 
+  pattern, 
+  highlightedVariations,
+  highlightedVariationsCpp = [] 
+}) => {
+  const { t, language, codeLanguage } = useLanguage();
   const isZh = language === 'zh';
+  const isCpp = codeLanguage === 'cpp';
 
   const displayName = isZh && pattern.name_zh ? pattern.name_zh : pattern.name;
   const displayDescription = isZh && pattern.description_zh ? pattern.description_zh : pattern.description;
 
+  const activeResults = isCpp ? highlightedVariationsCpp : highlightedVariations;
+  const hasCpp = pattern.coreTemplateCpp !== undefined;
+
   return (
     <main className="min-h-screen bg-slate-50 antialiased selection:bg-blue-100 selection:text-blue-900 pb-20">
-      <div className="bg-slate-900 text-white pt-8 pb-24 relative overflow-hidden">
+      <div className="bg-slate-900 text-white pt-8 pb-32 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-blue-500/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="container mx-auto px-6 relative">
           <div className="flex justify-between items-center mb-12">
@@ -32,7 +42,10 @@ const PatternPageClient: React.FC<PatternPageClientProps> = ({ pattern, highligh
               <ChevronLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
               <span className="text-sm font-medium">{t('back_to_dashboard')}</span>
             </Link>
-            <LanguageSelector />
+            <div className="flex items-center gap-6">
+              <CodeLanguageSelector />
+              <LanguageSelector />
+            </div>
           </div>
           
           <div className="max-w-4xl">
@@ -56,10 +69,16 @@ const PatternPageClient: React.FC<PatternPageClientProps> = ({ pattern, highligh
       </div>
 
       <div className="container mx-auto px-6 -mt-12">
-        <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200 p-8 lg:p-12 mb-12 border border-slate-100">
+        <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200 p-8 lg:p-12 mb-12 border border-slate-100 min-h-[600px]">
           <PatternImage src={pattern.imageUrl} alt={pattern.name} />
 
-          {pattern.variations.length > 0 ? (
+          {isCpp && !hasCpp ? (
+            <div className="py-20 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl">
+              <Dna className="w-12 h-12 text-blue-600/20 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-700 mb-2">C++ Content Coming Soon</h3>
+              <p className="text-slate-500 max-w-xs mx-auto">We are currently synchronizing the C++ DNA sequence for this pattern.</p>
+            </div>
+          ) : pattern.variations.length > 0 ? (
             <section className="mb-20">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-2 h-8 bg-blue-600 rounded-full" />
@@ -80,11 +99,11 @@ const PatternPageClient: React.FC<PatternPageClientProps> = ({ pattern, highligh
               </div>
               
               <CodeDiffViewerClient 
-                templateResult={highlightedVariations[0]?.templateResult}
-                variationResult={highlightedVariations[0]?.variationResult}
+                templateResult={activeResults[0]?.templateResult}
+                variationResult={activeResults[0]?.variationResult}
                 explanation={isZh && pattern.variations[0].explanation_zh ? pattern.variations[0].explanation_zh : pattern.variations[0].explanation}
-                coreLogic={pattern.variations[0].coreLogic}
-                adaptationLogic={pattern.variations[0].adaptationLogic}
+                coreLogic={isCpp && pattern.variations[0].coreLogicCpp ? pattern.variations[0].coreLogicCpp : pattern.variations[0].coreLogic}
+                adaptationLogic={isCpp && pattern.variations[0].adaptationLogicCpp ? pattern.variations[0].adaptationLogicCpp : pattern.variations[0].adaptationLogic}
               />
             </section>
           ) : (
@@ -95,7 +114,7 @@ const PatternPageClient: React.FC<PatternPageClientProps> = ({ pattern, highligh
             </section>
           )}
 
-          {pattern.variations.length > 1 && (
+          {pattern.variations.length > 1 && (!isCpp || hasCpp) && (
             <section>
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-2 h-8 bg-emerald-500 rounded-full" />
@@ -117,13 +136,13 @@ const PatternPageClient: React.FC<PatternPageClientProps> = ({ pattern, highligh
                         {t('solve_on_leetcode')} <ExternalLink className="w-3 h-3 ml-1.5" />
                       </Link>
                     </div>
-                    {highlightedVariations[index + 1] && (
+                    {activeResults[index + 1] && (
                       <CodeDiffViewerClient 
-                        templateResult={highlightedVariations[index + 1].templateResult}
-                        variationResult={highlightedVariations[index + 1].variationResult}
+                        templateResult={activeResults[index + 1].templateResult}
+                        variationResult={activeResults[index + 1].variationResult}
                         explanation={isZh && variation.explanation_zh ? variation.explanation_zh : variation.explanation}
-                        coreLogic={variation.coreLogic}
-                        adaptationLogic={variation.adaptationLogic}
+                        coreLogic={isCpp && variation.coreLogicCpp ? variation.coreLogicCpp : variation.coreLogic}
+                        adaptationLogic={isCpp && variation.adaptationLogicCpp ? variation.adaptationLogicCpp : variation.adaptationLogic}
                       />
                     )}
                   </div>
